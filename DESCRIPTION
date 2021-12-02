@@ -1,0 +1,16 @@
+Package: apa7
+Type: Package
+Title: Creates a correlation table 
+Version: 0.1.0
+Authors@R: person("Avraham (Avi) N.", "Kluger", email = "avraham.kluger@huji.ac.il",  role = c("aut", "cre"))
+Maintainer: The package maintainer <avraham.kluger@huji.ac.il>
+Description: following the 7th Edition of the Publication Mannual of the APA (Table 7.10 on p. 215) and variants including reliabilities in the diagonal, and disattenauted correlations above the diagonal.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports:
+    sjPlot,
+    CTT,
+    weights,
+    Hmisc
+importFrom: magrittr %>%
