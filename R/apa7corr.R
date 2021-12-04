@@ -34,10 +34,10 @@ apa7corr <- function(data = x,
     }
 
   # Prepare a header & footnote
-  if(listwiseDeletion == FALSE){
-     Col.header  <-  c("Measure", "N", "Mean",	"SD", 1:ncol(data))
-  }else{
+  if(listwiseDeletion == TRUE | sum(is.na(x)) == 0){
      Col.header  <-  c("Measure", "Mean",	"SD", 1:ncol(data))
+  }else{
+     Col.header  <-  c("Measure", "N", "Mean",	"SD", 1:ncol(data))
   }
 
   ft.note  <- "<i>Note</i>. "
@@ -128,10 +128,11 @@ apa7corr <- function(data = x,
   corTable            <- cbind(corTable, corMatrix)
   row.names(corTable) <- NULL
   colnames(corTable)  <- c("Measure", "N", "Mean",	"SD", 1:nrow(corTable))
-  if(listwiseDeletion == TRUE)  corTable <- corTable[, -c(grep("N", names(corTable)))]
+  if(listwiseDeletion == TRUE | sum(is.na(x)) == 0)  corTable <-
+    corTable[, -c(grep("N", names(corTable)))]
   corTable[, c("Mean", "SD")] <- round(corTable[, c("Mean", "SD")], 2)
 
-  sjPlot::tab_df(
+  tab <- sjPlot::tab_df(
     corTable,
     title = "<b>Table X.</b> <br>
        Descriptive Statistics and Correlations for Study Variables",
@@ -142,4 +143,6 @@ apa7corr <- function(data = x,
     CSS = list(css.footnote = 'text-align: left;',
                css.caption  = 'text-align: left;')
   )
+    tab$page.complete <- gsub("double", "1px solid", tab$page.complete)
+    tab
 }
