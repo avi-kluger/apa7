@@ -56,34 +56,34 @@ apa7corr <- function (data, useLabels = NULL, listwiseDeletion = FALSE,
   corMatrix <- cor(data, use = "pairwise.complete.obs")
   corMatrix <- CTT::disattenuated.cor(corMatrix, unlist(reliabilities))
   corMatrix <- as.data.frame(corMatrix)
-  corMatrixNumeric <- corMatrix
-  corMatrixNumeric <- corMatrix
+  corMatrixNumeric <- as.data.frame(corMatrix)
+  corMatrixNumeric <- as.data.frame(corMatrixNumeric)
 
   ciMatrix <- matrix(nrow = nrow(corMatrix), ncol = ncol(corMatrix))
 
     for (i in 1:ncol(corMatrix)) {
     for (j in 1:ncol(corMatrix)) {
       if(j > i){
-      r <- corMatrix[i, j]
-      if(abs (r) >= 1) {ciMatrix[i, j] <- corMatrix[i, j]
-        # print(c(i, j))
-        # print(ciMatrix[i, j])
+      r <- abs(corMatrixNumeric[i, j])
+      if(r >= 1) {ciMatrix[i, j] <- corMatrix[i, j]
+        print(c(i, j))
+        print(ciMatrix[i, j])
       } else {
         N <- nrow(na.omit(data[, c(i,j)]))
         ciMatrix[i, j] <- psychometric::CIr(r, N, level = 0.95)[2]
-        # print(c(i, j))
-        # print(ciMatrix[i, j])
+        print(c(i, j))
+        print(ciMatrix[i, j])
       }
     }
   }
 }
 
-  divergence.moderate <- abs(max(corMatrix)) > 1 |
-                         abs(ciMatrix[which.max(abs(ciMatrix))]) > .9
-  divergence.minor    <- abs(max(corMatrix)) < 1 |
-                         abs(ciMatrix[which.max(abs(ciMatrix))]) > .8
+  divergence.moderate <- abs(max(corMatrixNumeric)) > 1 |
+                         ciMatrix[which.max(abs(ciMatrix))] > .9
+  divergence.minor    <- abs(max(corMatrixNumeric)) < 1 |
+                         ciMatrix[which.max(abs(ciMatrix))] > .8
 
-  if (listwiseDeletion == TRUE | sum(is.na(x)) == 0) {
+  if (listwiseDeletion == TRUE | sum(is.na(data)) == 0) {
     Col.header <- c("Measure", "Mean", "SD", 1:ncol(data))
   } else {
     Col.header <- c("Measure", "N", "Mean", "SD", 1:ncol(data))
@@ -148,23 +148,22 @@ apa7corr <- function (data, useLabels = NULL, listwiseDeletion = FALSE,
   }
   for (i in 1:ncol(corMatrix)) {
     for (j in 1:ncol(corMatrix)) {
-      if(abs(corMatrixNumeric[i, j]) >= 1) {
+      if(abs(corMatrixNumeric[i, j]) >= 1 & j > i) {
+        print(corMatrixNumeric[i, j])
         corMatrix[i, j] <- paste0("<b><u>", corMatrix[i, j],  "</u></b>")
       } else {
-            if(!is.na(ciMatrix[i, j] ) &
-               abs(ciMatrix[which.max(abs(ciMatrix))]) > .90){
-            corMatrix[i, j] <- paste0("<b><u>", corMatrix[i, j], "</u></b>")
-            } else {
-              if(!is.na(ciMatrix[i, j] ) &
-                 abs(ciMatrix[which.max(abs(ciMatrix))]) > .80){
-                corMatrix[i, j] <- paste0("<b>", corMatrix[i, j],  "</b>")
-        }
+              if(!is.na(ciMatrix[i, j] ) & ciMatrix[i, j] > .90){
+                corMatrix[i, j] <- paste0("<u>", corMatrix[i, j],  "</u>")
+          } else {
+            if(!is.na(ciMatrix[i, j] ) & ciMatrix[i, j] > .80){
+          corMatrix[i, j] <- paste0("<b>", corMatrix[i, j], "</b>")
       }
+     }
     }
    }
   }
 
-  corMatrix <- ifelse(corMatrix == ".000000", ".00", corMatrix)
+    corMatrix <- ifelse(corMatrix == ".000000", ".00", corMatrix)
   for (i in 1:ncol(corMatrix)) corMatrix[i, i] <- paste0("(",
                                                          corMatrix[i, i], ")")
   corMatrix[pCorr == "*"] <- paste0(corMatrix[pCorr == "*"], "*")
