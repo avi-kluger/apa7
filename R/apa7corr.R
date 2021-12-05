@@ -1,12 +1,4 @@
 # FOR  TESTING
-# data("attitude")
-# attitude[5, 2:3] <- NA
-# data <- attitude
-# useLabels = NULL
-# listwiseDeletion = FALSE
-# disattenuated = TRUE
-# reliabilities = c(rep(.9, ncol(data)))
-# threeStars = FALSE
 # myLabel <- c(
 #   "Overall rating (the Dependent Variable)",
 #   "Handling of employee complaints",
@@ -16,12 +8,20 @@
 #   "Too critical",
 #   "Advancement"
 # )
-# alphaVector <- c(.7, .83, 1, 1, .9, .89, .63)
-# useLabels = myLabel
+
+# data("attitude")
+# data <- attitude
+# data[5, 2:3] <- NA
+# data$complaints <- -1 * data$complaints
+# useLabels = NULL
 # listwiseDeletion = TRUE
 # disattenuated = TRUE
+# reliabilities = c(rep(.9, ncol(data)))
+# threeStars = FALSE
+# alphaVector <- c(.7, .83, 1, 1, .9, .89, .63)
 # reliabilities = alphaVector
 
+# useLabels = myLabel
 
 apa7corr <- function (data, useLabels = NULL, listwiseDeletion = FALSE,
           disattenuated = FALSE, reliabilities = c(rep(1, ncol(data))),
@@ -46,7 +46,7 @@ apa7corr <- function (data, useLabels = NULL, listwiseDeletion = FALSE,
   }
   if (listwiseDeletion == TRUE) {
     if (nrow(data) == nrow(na.omit(data))){
-      warning("You asked for listwise deletion, but there are no missing data. Processing countinues with listwiseDeletion == FALSE.")
+      warning("You asked for listwise deletion, but there are no missing data. \nProcessing countinues with listwiseDeletion == FALSE.")
       listwiseDeletion <-  FALSE
           } else {
       data <- na.omit(data)
@@ -56,6 +56,8 @@ apa7corr <- function (data, useLabels = NULL, listwiseDeletion = FALSE,
   corMatrix <- cor(data, use = "pairwise.complete.obs")
   corMatrix <- CTT::disattenuated.cor(corMatrix, unlist(reliabilities))
   corMatrix <- as.data.frame(corMatrix)
+  corMatrixNumeric <- corMatrix
+  corMatrixNumeric <- corMatrix
 
   ciMatrix <- matrix(nrow = nrow(corMatrix), ncol = ncol(corMatrix))
 
@@ -63,7 +65,7 @@ apa7corr <- function (data, useLabels = NULL, listwiseDeletion = FALSE,
     for (j in 1:ncol(corMatrix)) {
       if(j > i){
       r <- corMatrix[i, j]
-      if(r >= 1) {ciMatrix[i, j] <- corMatrix[i, j]
+      if(abs (r) >= 1) {ciMatrix[i, j] <- corMatrix[i, j]
         # print(c(i, j))
         # print(ciMatrix[i, j])
       } else {
@@ -76,8 +78,10 @@ apa7corr <- function (data, useLabels = NULL, listwiseDeletion = FALSE,
   }
 }
 
-  divergence.moderate <- max(corMatrix) > 1 | max(ciMatrix, na.rm = TRUE) > .9
-  divergence.minor    <- max(corMatrix) < 1 | max(ciMatrix, na.rm = TRUE) > .8
+  divergence.moderate <- abs(max(corMatrix)) > 1 |
+                         abs(ciMatrix[which.max(abs(ciMatrix))]) > .9
+  divergence.minor    <- abs(max(corMatrix)) < 1 |
+                         abs(ciMatrix[which.max(abs(ciMatrix))]) > .8
 
   if (listwiseDeletion == TRUE | sum(is.na(x)) == 0) {
     Col.header <- c("Measure", "Mean", "SD", 1:ncol(data))
@@ -142,25 +146,25 @@ apa7corr <- function (data, useLabels = NULL, listwiseDeletion = FALSE,
       }
     }
   }
-
   for (i in 1:ncol(corMatrix)) {
     for (j in 1:ncol(corMatrix)) {
-      if(corMatrix[i, j] >= 1) {
+      if(abs(corMatrixNumeric[i, j]) >= 1) {
         corMatrix[i, j] <- paste0("<b><u>", corMatrix[i, j],  "</u></b>")
       } else {
-            if(!is.na(ciMatrix[i, j] ) & ciMatrix[i, j]> .90){
+            if(!is.na(ciMatrix[i, j] ) &
+               abs(ciMatrix[which.max(abs(ciMatrix))]) > .90){
             corMatrix[i, j] <- paste0("<b><u>", corMatrix[i, j], "</u></b>")
             } else {
-              if(!is.na(ciMatrix[i, j] ) & ciMatrix[i, j]> .80){
+              if(!is.na(ciMatrix[i, j] ) &
+                 abs(ciMatrix[which.max(abs(ciMatrix))]) > .80){
                 corMatrix[i, j] <- paste0("<b>", corMatrix[i, j],  "</b>")
-              }
+        }
       }
     }
    }
   }
 
-  corMatrix <- ifelse(corMatrix == ".000000", ".00",
-                      corMatrix)
+  corMatrix <- ifelse(corMatrix == ".000000", ".00", corMatrix)
   for (i in 1:ncol(corMatrix)) corMatrix[i, i] <- paste0("(",
                                                          corMatrix[i, i], ")")
   corMatrix[pCorr == "*"] <- paste0(corMatrix[pCorr == "*"], "*")

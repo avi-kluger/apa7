@@ -38,6 +38,10 @@ apa7corr(data,
 %% ...
 }
 \references{
+https://apastyle.apa.org/products/publication-manual-7th-edition
+
+Rönkkö, M., & Cho, E. (2020). An updated guideline for assessing discriminant validity. Organizational Research Methods. https://doi.org/10.1177/1094428120968614
+
 %% ~put references to the literature/web site here ~
 }
 \author{Avraham (Avi) N. Kluger <avraham.kluger@huji.ac.il>
