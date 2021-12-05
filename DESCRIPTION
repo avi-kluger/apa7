@@ -12,5 +12,6 @@ Imports:
     sjPlot,
     CTT,
     weights,
-    Hmisc
+    Hmisc,
+    psychometric
 importFrom: magrittr %>%

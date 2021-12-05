@@ -112,7 +112,7 @@ apa7corr(attitude,
          threeStars = TRUE)
 
 ## The function is currently defined as
- function(data = x,
+ function(data,
           useLabels = NULL,
           listwiseDeletion = FALSE,
           disattenuated = FALSE,
