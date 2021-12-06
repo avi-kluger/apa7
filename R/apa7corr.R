@@ -175,9 +175,12 @@ apa7corr <- function (data, useLabels = NULL, listwiseDeletion = FALSE,
   if (disattenuated == FALSE)            ft.above <- ""
   if (disattenuated == FALSE)            ft.bold  <- ""
   if (disattenuated == FALSE)            ft.score <- ""
-  if (disattenuated == TRUE & divergence.minor == FALSE)    ft.bold  <- ""
-  if (disattenuated == TRUE & divergence.moderate == FALSE) ft.score <- ""
-  if (disattenuated == TRUE & divergence.severe == FALSE)   ft.itali <- ""
+  if (disattenuated == FALSE |
+      (disattenuated == TRUE & divergence.minor == FALSE))    ft.bold  <- ""
+  if (disattenuated == FALSE |
+      (disattenuated == TRUE & divergence.moderate == FALSE)) ft.score <- ""
+  if (disattenuated == FALSE |
+      (disattenuated == TRUE & divergence.severe == FALSE))   ft.itali <- ""
   if (ft.3star == FALSE)                 ft.3star <- ""
 
   ft <- paste0(ft.note, ft.N, ft.miss, ft.diag,
