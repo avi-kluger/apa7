@@ -8,18 +8,18 @@
 #   "Too critical",
 #   "Advancement"
 # )
-
-data("attitude")
-data <- attitude
-data[5, 2:3] <- NA
-data$complaints <- -1 * data$complaints
-useLabels = NULL
-listwiseDeletion = TRUE
-disattenuated = TRUE
-reliabilities = c(rep(.9, ncol(data)))
-threeStars = FALSE
-alphaVector <- c(.7, .83, 1, 1, .9, .89, .63)
-reliabilities = alphaVector
+#
+# data("attitude")
+# data <- attitude
+# data[5, 2:3] <- NA
+# data$complaints <- -1 * data$complaints
+# useLabels = NULL
+# listwiseDeletion = TRUE
+# disattenuated = TRUE
+# reliabilities = c(rep(.9, ncol(data)))
+# threeStars = FALSE
+# alphaVector <- c(.7, .83, 1, 1, .9, .89, .63)
+# reliabilities = alphaVector
 
 # useLabels = myLabel
 
@@ -62,8 +62,8 @@ apa7corr <- function (data, useLabels = NULL, listwiseDeletion = FALSE,
         r <- abs(corMatrix[i, j])
         N <- nrow(na.omit(data[, c(i,j)]))
         ciMatrix[i, j] <- psychometric::CIr(r, N, level = 0.95)[2]
-        print(c(i, j))
-        print(ciMatrix[i, j])
+        # print(c(i, j))
+        # print(ciMatrix[i, j])
       }  else {
         ciMatrix[i, j] <- as.numeric(reliabilities) [i]
         }
@@ -87,33 +87,6 @@ apa7corr <- function (data, useLabels = NULL, listwiseDeletion = FALSE,
   } else {
     Col.header <- c("Measure", "N", "Mean", "SD", 1:ncol(data))
   }
-  ft.note  <- "<i>Note</i>. "
-  ft.N     <- paste0(" <i>N</i> = ", nrow(data), ".")
-  ft.miss  <- " Correlations for variables with missing data are based on pairwise deletion."
-  ft.diag  <- " Values in the diagonal are reliabilities."
-  ft.above <- " Values above the diagonal are disattenuated correlations."
-  ft.dis1  <- " Disattenuated correlations for which the upper limit of their confidence interval > "
-  ft.dis2  <- " problem with divergent validity."
-  ft.bold  <- paste0(ft.dis1, ".80 are printed in <b>bold</b> and suggests a marginal ", ft.dis2)
-  ft.score <- paste0(ft.dis1, ".90 are printed in <b><u>underscore and bold</u></b> and suggests a moderate ", ft.dis2)
-  ft.itali <- paste0(ft.dis1, "1 are printed in <i><b><u>italics, underscore and bold</u></b></i> and suggests a severe ", ft.dis2)
-  ft.star  <- "<br>*<i>p</i>< .05. **<i>p</i>< .01."
-  ft.3star <- " ***<i>p</i>< .001."
-
-
-  if (listwiseDeletion == TRUE)          ft.N     <- ""
-  if (listwiseDeletion == FALSE)         ft.miss  <- ""
-  if (sum(reliabilities) == ncol(data))  ft.diag  <- ""
-  if (disattenuated == FALSE)            ft.above <- ""
-  if (disattenuated == FALSE)            ft.bold  <- ""
-  if (disattenuated == FALSE)            ft.score <- ""
-  if (disattenuated == TRUE & divergence.minor == FALSE)    ft.bold  <- ""
-  if (disattenuated == TRUE & divergence.moderate == FALSE) ft.score <- ""
-  if (disattenuated == TRUE & divergence.severe == FALSE)   ft.itali <- ""
-  if (ft.3star == FALSE)                 ft.3star <- ""
-
-  ft <- paste0(ft.note, ft.N, ft.miss, ft.diag,
-               ft.above, ft.bold, ft.score, ft.itali, ft.star, ft.3star)
 
   if (is.null(useLabels)) {
     corTable <- data.frame(Measure = names(data))
@@ -121,7 +94,7 @@ apa7corr <- function (data, useLabels = NULL, listwiseDeletion = FALSE,
     corTable <- data.frame(Measure = useLabels)
   }
   corTable$Measure <- paste(1:nrow(corTable), corTable$Measure, sep = ". ")
-  corTable$N       <- sapply(data, function(x) sum(!is.na(x)))
+  corTable$N       <- format(sapply(data, function(x) sum(!is.na(x))), big.mark = ",")
   corTable$Mean    <- sapply(data, mean, na.rm = TRUE)
   corTable$SD      <- sapply(data, sd, na.rm = TRUE)
 
@@ -181,6 +154,34 @@ apa7corr <- function (data, useLabels = NULL, listwiseDeletion = FALSE,
   if (listwiseDeletion == TRUE | sum(is.na(data)) == 0)
     corTable <- corTable[, -c(grep("N", names(corTable)))]
   corTable[, c("Mean", "SD")] <- round(corTable[,c("Mean", "SD")], 2)
+
+  ft.note  <- "<i>Note</i>. "
+  ft.N     <- paste0(" <i>N</i> = ", nrow(data), ".")
+  ft.miss  <- " Correlations for variables with missing data are based on pairwise deletion."
+  ft.diag  <- " Values in the diagonal are reliabilities."
+  ft.above <- " Values above the diagonal are disattenuated correlations."
+  ft.dis1  <- " Disattenuated correlations for which the upper limit of their confidence interval > "
+  ft.dis2  <- " problem with divergent validity."
+  ft.bold  <- paste0(ft.dis1, ".80 are printed in <b>bold</b> and suggests a marginal ", ft.dis2)
+  ft.score <- paste0(ft.dis1, ".90 are printed in <b><u>underscore and bold</u></b> and suggests a moderate ", ft.dis2)
+  ft.itali <- paste0(ft.dis1, "1 are printed in <i><b><u>italics, underscore and bold</u></b></i> and suggests a severe ", ft.dis2)
+  ft.star  <- "<br>*<i>p</i>< .05. **<i>p</i>< .01."
+  ft.3star <- " ***<i>p</i>< .001."
+
+
+  if (listwiseDeletion == FALSE)          ft.N    <- ""
+  if (listwiseDeletion == FALSE)         ft.miss  <- ""
+  if (sum(reliabilities) == ncol(data))  ft.diag  <- ""
+  if (disattenuated == FALSE)            ft.above <- ""
+  if (disattenuated == FALSE)            ft.bold  <- ""
+  if (disattenuated == FALSE)            ft.score <- ""
+  if (disattenuated == TRUE & divergence.minor == FALSE)    ft.bold  <- ""
+  if (disattenuated == TRUE & divergence.moderate == FALSE) ft.score <- ""
+  if (disattenuated == TRUE & divergence.severe == FALSE)   ft.itali <- ""
+  if (ft.3star == FALSE)                 ft.3star <- ""
+
+  ft <- paste0(ft.note, ft.N, ft.miss, ft.diag,
+               ft.above, ft.bold, ft.score, ft.itali, ft.star, ft.3star)
 
   tab <- sjPlot::tab_df(corTable, title = "<b>Table X.</b> <br>\n
               Descriptive Statistics and Correlations for Study Variables",
