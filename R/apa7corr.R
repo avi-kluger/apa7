@@ -181,7 +181,7 @@ apa7corr <- function (data, useLabels = NULL, listwiseDeletion = FALSE,
       (disattenuated == TRUE & divergence.moderate == FALSE)) ft.score <- ""
   if (disattenuated == FALSE |
       (disattenuated == TRUE & divergence.severe == FALSE))   ft.itali <- ""
-  if (ft.3star == FALSE)                 ft.3star <- ""
+  if (threeStars == FALSE)                 ft.3star <- ""
 
   ft <- paste0(ft.note, ft.N, ft.miss, ft.diag,
                ft.above, ft.bold, ft.score, ft.itali, ft.star, ft.3star)
