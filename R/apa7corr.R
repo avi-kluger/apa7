@@ -9,17 +9,17 @@
 #   "Advancement"
 # )
 
-# data("attitude")
-# data <- attitude
-# data[5, 2:3] <- NA
-# data$complaints <- -1 * data$complaints
-# useLabels = NULL
-# listwiseDeletion = TRUE
-# disattenuated = TRUE
-# reliabilities = c(rep(.9, ncol(data)))
-# threeStars = FALSE
-# alphaVector <- c(.7, .83, 1, 1, .9, .89, .63)
-# reliabilities = alphaVector
+data("attitude")
+data <- attitude
+data[5, 2:3] <- NA
+data$complaints <- -1 * data$complaints
+useLabels = NULL
+listwiseDeletion = TRUE
+disattenuated = TRUE
+reliabilities = c(rep(.9, ncol(data)))
+threeStars = FALSE
+alphaVector <- c(.7, .83, 1, 1, .9, .89, .63)
+reliabilities = alphaVector
 
 # useLabels = myLabel
 
@@ -54,34 +54,33 @@ apa7corr <- function (data, useLabels = NULL, listwiseDeletion = FALSE,
   }
 
   corMatrix <- cor(data, use = "pairwise.complete.obs")
+  ciMatrix  <- matrix(nrow = nrow(corMatrix), ncol = ncol(corMatrix))
+
+  for (i in 1:ncol(corMatrix)) {
+    for (j in 1:ncol(corMatrix)) {
+      if(j != i){
+        r <- abs(corMatrix[i, j])
+        N <- nrow(na.omit(data[, c(i,j)]))
+        ciMatrix[i, j] <- psychometric::CIr(r, N, level = 0.95)[2]
+        print(c(i, j))
+        print(ciMatrix[i, j])
+      }  else {
+        ciMatrix[i, j] <- as.numeric(reliabilities) [i]
+        }
+      }
+    }
+
+
   corMatrix <- CTT::disattenuated.cor(corMatrix, unlist(reliabilities))
   corMatrix <- as.data.frame(corMatrix)
   corMatrixNumeric <- as.data.frame(corMatrix)
   corMatrixNumeric <- as.data.frame(corMatrixNumeric)
 
-  ciMatrix <- matrix(nrow = nrow(corMatrix), ncol = ncol(corMatrix))
+  ciMatrix <- CTT::disattenuated.cor(ciMatrix, unlist(reliabilities))
 
-    for (i in 1:ncol(corMatrix)) {
-    for (j in 1:ncol(corMatrix)) {
-      if(j > i){
-      r <- abs(corMatrixNumeric[i, j])
-      if(r >= 1) {ciMatrix[i, j] <- corMatrix[i, j]
-        print(c(i, j))
-        print(ciMatrix[i, j])
-      } else {
-        N <- nrow(na.omit(data[, c(i,j)]))
-        ciMatrix[i, j] <- psychometric::CIr(r, N, level = 0.95)[2]
-        print(c(i, j))
-        print(ciMatrix[i, j])
-      }
-    }
-  }
-}
-
-  divergence.moderate <- abs(max(corMatrixNumeric)) > 1 |
-                         ciMatrix[which.max(abs(ciMatrix))] > .9
-  divergence.minor    <- abs(max(corMatrixNumeric)) < 1 |
-                         ciMatrix[which.max(abs(ciMatrix))] > .8
+  divergence.severe   <- ciMatrix[which.max(abs(ciMatrix))] > 1
+  divergence.moderate <- ciMatrix[which.max(abs(ciMatrix))] > .9
+  divergence.minor    <- ciMatrix[which.max(abs(ciMatrix))] > .8
 
   if (listwiseDeletion == TRUE | sum(is.na(data)) == 0) {
     Col.header <- c("Measure", "Mean", "SD", 1:ncol(data))
@@ -93,8 +92,11 @@ apa7corr <- function (data, useLabels = NULL, listwiseDeletion = FALSE,
   ft.miss  <- " Correlations for variables with missing data are based on pairwise deletion."
   ft.diag  <- " Values in the diagonal are reliabilities."
   ft.above <- " Values above the diagonal are disattenuated correlations."
-  ft.bold  <- " Disattenuated correlations for which the upper limit of their confidence interval > .80 are printed in <b>bold</b>. This suggests marginal problem with divergent validity."
-  ft.score <- " Disattenuated correlations > 1 and those for which the upper limit of their confidence interval > .90 are printed in <b><u>underscore and bold</u></b>.This suggests moderate to severe problem with divergent validity."
+  ft.dis1  <- " Disattenuated correlations for which the upper limit of their confidence interval > "
+  ft.dis2  <- " problem with divergent validity."
+  ft.bold  <- paste0(ft.dis1, ".80 are printed in <b>bold</b> and suggests a marginal ", ft.dis2)
+  ft.score <- paste0(ft.dis1, ".90 are printed in <b><u>underscore and bold</u></b> and suggests a moderate ", ft.dis2)
+  ft.itali <- paste0(ft.dis1, "1 are printed in <i><b><u>italics, underscore and bold</u></b></i> and suggests a severe ", ft.dis2)
   ft.star  <- "<br>*<i>p</i>< .05. **<i>p</i>< .01."
   ft.3star <- " ***<i>p</i>< .001."
 
@@ -107,21 +109,21 @@ apa7corr <- function (data, useLabels = NULL, listwiseDeletion = FALSE,
   if (disattenuated == FALSE)            ft.score <- ""
   if (disattenuated == TRUE & divergence.minor == FALSE)    ft.bold  <- ""
   if (disattenuated == TRUE & divergence.moderate == FALSE) ft.score <- ""
+  if (disattenuated == TRUE & divergence.severe == FALSE)   ft.itali <- ""
   if (ft.3star == FALSE)                 ft.3star <- ""
 
   ft <- paste0(ft.note, ft.N, ft.miss, ft.diag,
-               ft.above, ft.bold, ft.score, ft.star, ft.3star)
+               ft.above, ft.bold, ft.score, ft.itali, ft.star, ft.3star)
 
   if (is.null(useLabels)) {
     corTable <- data.frame(Measure = names(data))
   } else {
     corTable <- data.frame(Measure = useLabels)
   }
-  corTable$Measure <- paste(1:nrow(corTable), corTable$Measure,
-                            sep = ". ")
-  corTable$N <- sapply(data, function(x) sum(!is.na(x)))
-  corTable$Mean <- sapply(data, mean, na.rm = TRUE)
-  corTable$SD <- sapply(data, sd, na.rm = TRUE)
+  corTable$Measure <- paste(1:nrow(corTable), corTable$Measure, sep = ". ")
+  corTable$N       <- sapply(data, function(x) sum(!is.na(x)))
+  corTable$Mean    <- sapply(data, mean, na.rm = TRUE)
+  corTable$SD      <- sapply(data, sd, na.rm = TRUE)
 
   p <- Hmisc::rcorr(as.matrix(data))
   p <- as.matrix(p$P)
@@ -130,14 +132,14 @@ apa7corr <- function (data, useLabels = NULL, listwiseDeletion = FALSE,
   pCorr[p < 0.01] <- "**"
   if (threeStars == TRUE)
     pCorr[p < 0.001] <- "***"
-  pCorr[upper.tri(pCorr)] <- ""
+    pCorr[upper.tri(pCorr)] <- ""
 
-  corMatrix <- sapply(corMatrix, weights::rd, 2)
+  corMatrix <- sapply(corMatrixNumeric, weights::rd, 2)
   if (disattenuated == FALSE)
     corMatrix[upper.tri(corMatrix)] <- ""
   for (i in 1:ncol(corMatrix)) {
-    corMatrix[i, i] <- ifelse(corMatrix[i, i] == "1.00",
-                              "-", corMatrix[i, i])
+    corMatrix[i, i] <-
+      ifelse(corMatrix[i, i] == "1.00", "-", corMatrix[i, i])
   }
   for (i in 1:ncol(corMatrix)) {
     for (j in 1:ncol(corMatrix)) {
@@ -148,20 +150,22 @@ apa7corr <- function (data, useLabels = NULL, listwiseDeletion = FALSE,
   }
   for (i in 1:ncol(corMatrix)) {
     for (j in 1:ncol(corMatrix)) {
-      if(abs(corMatrixNumeric[i, j]) >= 1 & j > i) {
-        print(corMatrixNumeric[i, j])
-        corMatrix[i, j] <- paste0("<b><u>", corMatrix[i, j],  "</u></b>")
+      if (!is.na(ciMatrix[i, j] ) & j > i) {
+      if(ciMatrix[i, j] > 1) {
+        corMatrix[i, j] <- paste0("<i><b><u>", corMatrix[i, j], "</i></u></b>")
       } else {
-              if(!is.na(ciMatrix[i, j] ) & ciMatrix[i, j] > .90){
-                corMatrix[i, j] <- paste0("<u>", corMatrix[i, j],  "</u>")
-          } else {
-            if(!is.na(ciMatrix[i, j] ) & ciMatrix[i, j] > .80){
-          corMatrix[i, j] <- paste0("<b>", corMatrix[i, j], "</b>")
-      }
-     }
+        if(ciMatrix[i, j] > .90){
+          corMatrix[i, j] <- paste0("<b><u>", corMatrix[i, j], "</u></b>")
+        } else {
+          if(ciMatrix[i, j] > .80){
+            corMatrix[i, j] <- paste0("<b>", corMatrix[i, j], "</b>")
+               }
+             }
+          }
+       }
     }
-   }
   }
+
 
     corMatrix <- ifelse(corMatrix == ".000000", ".00", corMatrix)
   for (i in 1:ncol(corMatrix)) corMatrix[i, i] <- paste0("(",
