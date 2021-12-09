@@ -9,15 +9,17 @@
 #   "Advancement"
 # )
 #
-# data("attitude")
-# data <- attitude
 # data[5, 2:3] <- NA
 # data$complaints <- -1 * data$complaints
-# useLabels = NULL
-# listwiseDeletion = TRUE
-# disattenuated = TRUE
 # reliabilities = c(rep(.9, ncol(data)))
+
+# data("attitude")
+# data <- attitude
+# useLabels = NULL
+# listwiseDeletion = FALSE
+# disattenuated = TRUE
 # threeStars = FALSE
+# dagger = TRUE
 # alphaVector <- c(.7, .83, 1, 1, .9, .89, .63)
 # reliabilities = alphaVector
 
@@ -25,7 +27,7 @@
 
 apa7corr <- function (data, useLabels = NULL, listwiseDeletion = FALSE,
           disattenuated = FALSE, reliabilities = c(rep(1, ncol(data))),
-          threeStars = FALSE)
+          dagger = FALSE, threeStars = FALSE)
 {
   N <- x <- NULL
 
@@ -101,15 +103,14 @@ apa7corr <- function (data, useLabels = NULL, listwiseDeletion = FALSE,
   p <- Hmisc::rcorr(as.matrix(data))
   p <- as.matrix(p$P)
   pCorr <- matrix("", nrow = nrow(p), ncol = nrow(p))
+  pCorr[p < 0.1]  <- "\u2020"
   pCorr[p < 0.05] <- "*"
   pCorr[p < 0.01] <- "**"
-  if (threeStars == TRUE)
-    pCorr[p < 0.001] <- "***"
-    pCorr[upper.tri(pCorr)] <- ""
+  if (threeStars == TRUE) pCorr[p < 0.001] <- "***"
+  pCorr[upper.tri(pCorr)] <- ""
 
   corMatrix <- sapply(corMatrixNumeric, weights::rd, 2)
-  if (disattenuated == FALSE)
-    corMatrix[upper.tri(corMatrix)] <- ""
+  if (disattenuated == FALSE)     corMatrix[upper.tri(corMatrix)] <- ""
   for (i in 1:ncol(corMatrix)) {
     corMatrix[i, i] <-
       ifelse(corMatrix[i, i] == "1.00", "-", corMatrix[i, i])
@@ -118,7 +119,7 @@ apa7corr <- function (data, useLabels = NULL, listwiseDeletion = FALSE,
     for (j in 1:ncol(corMatrix)) {
         if(corMatrix[i, i] == "-" & corMatrix[j, j] == "-" & j > i){
           corMatrix[i, j] <- ""
-      }
+        }
     }
   }
   for (i in 1:ncol(corMatrix)) {
@@ -160,19 +161,24 @@ apa7corr <- function (data, useLabels = NULL, listwiseDeletion = FALSE,
   ft.miss  <- " Correlations for variables with missing data are based on pairwise deletion."
   ft.diag  <- " Values in the diagonal are reliabilities."
   ft.above <- " Values above the diagonal are disattenuated correlations."
+  ft.empty <- " For pairs of variables for which reliability is unavailable for both, the cell for the disattenuated correlations is left empty."
   ft.dis1  <- " Disattenuated correlations for which the upper limit of their confidence interval > "
   ft.dis2  <- " problem with divergent validity."
   ft.bold  <- paste0(ft.dis1, ".80 are printed in <b>bold</b> and suggests a marginal ", ft.dis2)
   ft.score <- paste0(ft.dis1, ".90 are printed in <b><u>underscore and bold</u></b> and suggests a moderate ", ft.dis2)
   ft.itali <- paste0(ft.dis1, "1 are printed in <i><b><u>italics, underscore and bold</u></b></i> and suggests a severe ", ft.dis2)
-  ft.star  <- "<br>*<i>p</i>< .05. **<i>p</i>< .01."
-  ft.3star <- " ***<i>p</i>< .001."
+  ft.sig   <- "<br>"
+  ft.dag   <- "†<i>p</i> < .10."
+  ft.star  <- "*<i>p</i> < .05. **<i>p</i> < .01."
+  ft.3star <- " ***<i>p</i> < .001."
 
 
-  if (listwiseDeletion == FALSE)          ft.N    <- ""
+  if (listwiseDeletion == FALSE & sum(is.na(data)) > 0) ft.N    <- ""
   if (listwiseDeletion == FALSE)         ft.miss  <- ""
   if (sum(reliabilities) == ncol(data))  ft.diag  <- ""
   if (disattenuated == FALSE)            ft.above <- ""
+  ft.empty <- ifelse(sum(corMatrix == "(-)") > 1 & disattenuated == TRUE,
+                     ft.empty, "")
   if (disattenuated == FALSE)            ft.bold  <- ""
   if (disattenuated == FALSE)            ft.score <- ""
   if (disattenuated == FALSE |
@@ -181,16 +187,19 @@ apa7corr <- function (data, useLabels = NULL, listwiseDeletion = FALSE,
       (disattenuated == TRUE & divergence.moderate == FALSE)) ft.score <- ""
   if (disattenuated == FALSE |
       (disattenuated == TRUE & divergence.severe == FALSE))   ft.itali <- ""
-  if (threeStars == FALSE)                 ft.3star <- ""
+  if (dagger == FALSE)                   ft.dag   <- ""
+  if (threeStars == FALSE)               ft.3star <- ""
 
   ft <- paste0(ft.note, ft.N, ft.miss, ft.diag,
-               ft.above, ft.bold, ft.score, ft.itali, ft.star, ft.3star)
+               ft.above, ft.empty, ft.bold, ft.score, ft.itali,
+               ft.sig, ft.dag, ft.star, ft.3star)
 
   tab <- sjPlot::tab_df(corTable, title = "<b>Table X.</b> <br>\n
               Descriptive Statistics and Correlations for Study Variables",
               col.header = Col.header, show.footnote = TRUE, footnote = ft,
               CSS = list(css.footnote = "text-align: left;",
-                         css.caption = "text-align: left;"))
+                         css.caption = "text-align: left;"),
+              encoding = "Windows-1252")
   tab$page.complete <- gsub("double", "1px solid",
                             tab$page.complete)
   tab
