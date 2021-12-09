@@ -61,7 +61,7 @@ Rönkkö, M., & Cho, E. (2020). An updated guideline for assessing discriminant 
 \examples{
 apa7corr(attitude)
 
-# Prepare labels.Note the third label has HTML code that will add a tab
+# Prepare labels.Note the second label has HTML code that will add a tab
 myLabel <- c(
   "Overall rating (the Dependent Variable)",
   "&nbsp;&nbsp;&nbsp;&nbsp;Handling of employee complaints",
