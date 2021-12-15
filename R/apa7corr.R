@@ -13,15 +13,16 @@
 # data$complaints <- -1 * data$complaints
 # reliabilities = c(rep(.9, ncol(data)))
 
-# data("attitude")
-# data <- attitude
-# useLabels = NULL
-# listwiseDeletion = FALSE
-# disattenuated = TRUE
-# threeStars = FALSE
-# dagger = TRUE
-# alphaVector <- c(.7, .83, 1, 1, .9, .89, .63)
-# reliabilities = alphaVector
+data("attitude")
+data("attitude")
+data <- attitude
+useLabels = NULL
+listwiseDeletion = FALSE
+disattenuated = TRUE
+threeStars = FALSE
+dagger = TRUE
+alphaVector <- c(.7, .83, 1, 1, .9, .89, .63)
+reliabilities = alphaVector
 
 # useLabels = myLabel
 
@@ -203,7 +204,6 @@ apa7corr <- function (data, useLabels = NULL, listwiseDeletion = FALSE,
   tab$page.complete <- gsub("double", "1px solid",
                             tab$page.complete)
 
-  tab
   if (exportToWord == TRUE) {
   code <- paste(as.character(tab), collapse = "\n")
   write.table(code,
@@ -212,4 +212,5 @@ apa7corr <- function (data, useLabels = NULL, listwiseDeletion = FALSE,
               col.names = FALSE,
               row.names = FALSE)
   }
+  tab
 }
