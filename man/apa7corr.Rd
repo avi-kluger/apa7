@@ -14,7 +14,8 @@ apa7corr(data,
          disattenuated = FALSE,
          reliabilities = c(rep(1, ncol(data))),
          dagger = FALSE,
-         threeStars = FALSE
+         threeStars = FALSE,
+         exportToWord = FALSE
 )
 }
 %- maybe also 'usage' for other objects documented here.
@@ -25,7 +26,8 @@ apa7corr(data,
   \item{disattenuated}{FALSE (default). If TRUE, correlations above the diagonal will be disattenuated based on the reliability vector.}
   \item{reliabilities}{The default uses 1.00 for reliabilities and does not print them. You can add your vector of reliabilities (a numerical vector). Supplying your vector will result in showing them in the diagonal. If you supply your own vector and choose disattenuated = TRUE, disattenuated correlations will be printed above the diagonal. If you have some variables with reliabilities and some without (e.g., demographics such as age), use 1.00 for the variables with no reliability. In this case, disattenuated correlations will be printed only for pair of variables for at least one of the reliabilities is < 1.}
   \item{dagger}{FALSE (default). If TRUE, a dagger will be added for p < .10.}
-  \item{threeStars}{FALSE (default). If TRUE, three stars will be added for p < .001.
+  \item{threeStars}{FALSE (default). If TRUE, three stars will be added for p < .001.}
+  \item{exportToWord}{FALSE (default). If TRUE, an HTML file TableX.doc will be save on disk, and can be opened directly by Word.
 %%     ~~Describe \code{x} here~~
 }
 }
@@ -61,7 +63,7 @@ Rönkkö, M., & Cho, E. (2020). An updated guideline for assessing discriminant 
 \examples{
 apa7corr(attitude)
 
-# Prepare labels.Note the second label has HTML code that will add a tab
+# Prepare labels. Note the second label has HTML code that will add a tab
 myLabel <- c(
   "Overall rating (the Dependent Variable)",
   "&nbsp;&nbsp;&nbsp;&nbsp;Handling of employee complaints",
@@ -124,7 +126,8 @@ apa7corr(attitude,
           disattenuated = FALSE,
           reliabilities = c(rep(1, ncol(data))),
           dagger = FALSE,
-          threeStars = FALSE)
+          threeStars = FALSE,
+          exportToWord = FALSE)
 {}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

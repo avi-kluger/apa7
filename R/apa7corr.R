@@ -27,7 +27,7 @@
 
 apa7corr <- function (data, useLabels = NULL, listwiseDeletion = FALSE,
           disattenuated = FALSE, reliabilities = c(rep(1, ncol(data))),
-          dagger = FALSE, threeStars = FALSE)
+          dagger = FALSE, threeStars = FALSE, exportToWord = FALSE)
 {
   N <- x <- NULL
 
@@ -202,5 +202,14 @@ apa7corr <- function (data, useLabels = NULL, listwiseDeletion = FALSE,
               encoding = "Windows-1252")
   tab$page.complete <- gsub("double", "1px solid",
                             tab$page.complete)
+
   tab
+  if (exportToWord == TRUE) {
+  code <- paste(as.character(tab), collapse = "\n")
+  write.table(code,
+              file='TableX.doc',
+              quote = FALSE,
+              col.names = FALSE,
+              row.names = FALSE)
+  }
 }
